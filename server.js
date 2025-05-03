@@ -26,5 +26,25 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+const ADMIN_PASSWORD = "qwer1234!"; // ✏️ 원하는 비밀번호로 변경
+
+app.post('/api/gamza/login', (req, res) => {
+  const { password } = req.body;
+  if (password === ADMIN_PASSWORD) {
+    res.json({ success: true });
+  } else {
+    res.status(401).json({ success: false, error: "비밀번호가 틀렸습니다." });
+  }
+});
+
+app.get('/api/gamza/users', (req, res) => {
+  const { key } = req.query;
+  if (key !== ADMIN_PASSWORD) {
+    return res.status(403).json({ error: "접근 거부" });
+  }
+  res.json(users);
+});
+
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`서버 실행 중: http://localhost:${PORT}`));
