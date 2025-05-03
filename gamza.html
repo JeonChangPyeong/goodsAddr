@@ -81,13 +81,14 @@
     }
 
     function loadUsers() {
-      fetch("/api/users")
+      fetch("/api/gamza/users?key=gamza")
         .then(res => res.json())
         .then(data => {
           users = data;
           renderUsers();
         });
     }
+
 
     function renderUsers() {
       const search = document.getElementById("searchInput").value.toLowerCase();
