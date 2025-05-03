@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>관리자 페이지 - 감자</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f9f9f9; }
+    input, button { margin: 5px; padding: 8px; }
+    #userList { margin-top: 20px; white-space: pre-wrap; background: #eee; padding: 10px; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <h2>감자 관리자 페이지</h2>
+
+  <input type="password" id="pwInput" placeholder="비밀번호 입력" />
+  <button onclick="login()">접속</button>
+
+  <div id="userList">🔒 사용자 목록은 비밀번호 입력 후 표시됩니다.</div>
+
+  <script>
+    function login() {
+      const pw = document.getElementById("pwInput").value;
+      fetch(`/api/gamza/login?password=${encodeURIComponent(pw)}`)
+        .then(res => {
+          if (!res.ok) throw new Error("비밀번호가 틀렸습니다.");
+          return res.json();
+        })
+        .then(users => {
+          const text = users.map((u, i) =>
+            `${i + 1}. 닉네임: ${u.nickname}\n   주소: ${u.address}\n   전화번호: ${u.phone}`
+          ).join('\n\n');
+          document.getElementById("userList").textContent = text || "등록된 사용자가 없습니다.";
+        })
+        .catch(err => {
+          document.getElementById("userList").textContent = "❌ " + err.message;
+        });
+    }
+  </script>
+</body>
+</html>
