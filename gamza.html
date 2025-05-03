@@ -2,54 +2,57 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>관리자 페이지 - 감자배송</title>
+  <title>관리자 페이지</title>
   <style>
     body {
       font-family: sans-serif;
       padding: 20px;
-      background-color: #f5f5f5;
+      background-color: #f6f6f6;
     }
-    h2 {
+    #loginForm, #userTableContainer {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    #passwordInput {
+      padding: 10px;
+      width: 100%;
       margin-bottom: 10px;
-    }
-    input, button {
-      padding: 8px;
-      margin: 5px;
     }
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 15px;
       background-color: #fff;
     }
     th, td {
       border: 1px solid #ccc;
-      padding: 10px;
+      padding: 8px;
       text-align: center;
     }
-    .hidden { display: none; }
-    .search-container {
-      margin-top: 15px;
+    th {
+      background-color: #eee;
+    }
+    #searchInput {
+      margin: 10px 0;
+      padding: 8px;
+      width: 100%;
+    }
+    #downloadBtn {
+      margin-top: 10px;
+      padding: 8px;
     }
   </style>
 </head>
 <body>
-
-  <h2>감자배송 관리자 전용 페이지</h2>
-
-  <div id="loginSection">
+  <div id="loginForm">
+    <h2>관리자 로그인</h2>
     <input type="password" id="passwordInput" placeholder="비밀번호 입력" />
-    <button onclick="adminLogin()">로그인</button>
-    <div id="loginMessage" style="color: red;"></div>
+    <button onclick="checkPassword()">확인</button>
   </div>
 
-  <div id="adminSection" class="hidden">
-    <div class="search-container">
-      <input type="text" id="searchInput" placeholder="닉네임 검색" />
-      <button onclick="searchUser()">검색</button>
-      <button onclick="exportExcel()">엑셀 다운로드</button>
-    </div>
-    <table id="userTable">
+  <div id="userTableContainer" style="display:none;">
+    <h2>사용자 목록</h2>
+    <input type="text" id="searchInput" placeholder="닉네임으로 검색" oninput="renderUsers()" />
+    <table>
       <thead>
         <tr>
           <th>닉네임</th>
@@ -60,84 +63,60 @@
       </thead>
       <tbody id="userTableBody"></tbody>
     </table>
+    <button id="downloadBtn" onclick="downloadExcel()">엑셀 다운로드</button>
   </div>
 
   <script>
-    let adminKey = "";
+    let users = [];
 
-    function adminLogin() {
+    function checkPassword() {
       const password = document.getElementById("passwordInput").value;
-      fetch("/api/gamza/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password })
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            adminKey = password;
-            document.getElementById("loginSection").classList.add("hidden");
-            document.getElementById("adminSection").classList.remove("hidden");
-            loadUsers();
-          } else {
-            document.getElementById("loginMessage").textContent = "❌ 비밀번호가 틀렸습니다.";
-          }
-        });
+      if (password === "gamza") {
+        document.getElementById("loginForm").style.display = "none";
+        document.getElementById("userTableContainer").style.display = "block";
+        loadUsers();
+      } else {
+        alert("비밀번호가 틀렸습니다.");
+      }
     }
-
-    let originalUsers = [];
 
     function loadUsers() {
-      fetch(`/api/gamza/users?key=${adminKey}`)
+      fetch("/api/users")
         .then(res => res.json())
         .then(data => {
-          originalUsers = data;
-          renderTable(data);
+          users = data;
+          renderUsers();
         });
     }
 
-    function renderTable(users) {
-      const tbody = document.getElementById("userTableBody");
-      tbody.innerHTML = "";
-      users.forEach(u => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${u.nickname}</td>
-          <td>${u.address}</td>
-          <td>${u.detail}</td>
-          <td>${u.phone}</td>
-        `;
-        tbody.appendChild(tr);
-      });
+    function renderUsers() {
+      const search = document.getElementById("searchInput").value.toLowerCase();
+      const body = document.getElementById("userTableBody");
+      body.innerHTML = "";
+      users
+        .filter(u => u.nickname.toLowerCase().includes(search))
+        .forEach(u => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${u.nickname}</td><td>${u.address}</td><td>${u.detail}</td><td>${u.phone}</td>`;
+          body.appendChild(tr);
+        });
     }
 
-    function searchUser() {
-      const keyword = document.getElementById("searchInput").value.trim();
-      if (!keyword) {
-        renderTable(originalUsers);
-        return;
-      }
-      const filtered = originalUsers.filter(u =>
-        u.nickname.toLowerCase().includes(keyword.toLowerCase())
-      );
-      renderTable(filtered);
-    }
+    function downloadExcel() {
+      const headers = ["닉네임", "주소", "상세주소", "전화번호"];
+      const rows = users.map(u => [u.nickname, u.address, u.detail, u.phone]);
 
-    function exportExcel() {
-      const header = ["닉네임", "주소", "상세주소", "전화번호"];
-      const rows = originalUsers.map(u => [u.nickname, u.address, u.detail, u.phone]);
-      const csv = [header, ...rows].map(r => r.join(",")).join("\n");
+      let csv = headers.join(",") + "\n" + rows.map(r => r.join(",")).join("\n");
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
 
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", "감자배송_사용자목록.csv");
+      link.download = "users.csv";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     }
   </script>
-
 </body>
 </html>
