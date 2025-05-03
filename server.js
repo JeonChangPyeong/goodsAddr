@@ -26,6 +26,11 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+app.use(express.static(path.join(__dirname, "."))); // 현재 디렉토리 정적 파일 제공
+app.get("/gamza", (req, res) => {
+  res.sendFile(path.join(__dirname, "gamza.html"));
+});
+
 const ADMIN_PASSWORD = "qwer1234!"; // ✏️ 원하는 비밀번호로 변경
 
 app.post('/api/gamza/login', (req, res) => {
