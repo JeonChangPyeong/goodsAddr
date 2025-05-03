@@ -4,87 +4,97 @@
   <meta charset="UTF-8" />
   <title>주소 등록</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      background: #f8f8f8;
+      margin: 0;
       font-family: sans-serif;
+      background-color: #f8f8f8;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
     }
-    .container {
+
+    .form-container {
       background: white;
-      padding: 40px;
-      border-radius: 20px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-      width: 360px;
+      padding: 40px 30px;
+      border-radius: 18px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
     }
+
     h2 {
       text-align: center;
-      margin-bottom: 30px;
+      margin-bottom: 28px;
+      font-size: 24px;
+      font-weight: bold;
     }
-    input {
+
+    input[type="text"] {
       width: 100%;
-      padding: 15px;
-      margin-bottom: 15px;
-      font-size: 16px;
-      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
       border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
     }
+
     button {
       width: 100%;
-      padding: 15px;
-      background-color: #715cf0;
+      padding: 14px;
+      background-color: #6c5ce7;
       color: white;
-      font-size: 16px;
       border: none;
       border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
       cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #5a4ad1;
     }
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="form-container">
     <h2>주소 등록</h2>
-    <input type="text" id="nickname" placeholder="닉네임" />
-    <input type="text" id="address" placeholder="주소" readonly onclick="findAddress()" />
-    <input type="text" id="detailAddress" placeholder="상세주소" />
-    <input type="text" id="phone" placeholder="전화번호" />
-    <button onclick="submitForm()">등록</button>
+    <input type="text" placeholder="닉네임" id="nickname" />
+    <input type="text" placeholder="주소" id="address" />
+    <input type="text" placeholder="상세주소" id="detail" />
+    <input type="text" placeholder="전화번호" id="phone" />
+    <button onclick="register()">등록</button>
   </div>
 
-  <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
   <script>
-    function findAddress() {
-      new daum.Postcode({
-        oncomplete: function(data) {
-          document.getElementById("address").value = data.roadAddress;
-        }
-      }).open();
-    }
-
-    function submitForm() {
+    function register() {
       const nickname = document.getElementById("nickname").value.trim();
       const address = document.getElementById("address").value.trim();
-      const detailAddress = document.getElementById("detailAddress").value.trim();
+      const detail = document.getElementById("detail").value.trim();
       const phone = document.getElementById("phone").value.trim();
 
-      if (!nickname || !address || !phone) {
-        alert("모든 필드를 입력해주세요.");
-        return;
+      if (!nickname || !address || !detail || !phone) {
+        return alert("모든 필드를 입력하세요.");
       }
 
       fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nickname, address, detailAddress, phone })
-      }).then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            alert("등록 완료!");
-            location.reload();
-          }
-        });
+        body: JSON.stringify({ nickname, address, detail, phone })
+      })
+      .then(res => res.json())
+      .then(result => {
+        if (result.success) {
+          alert("등록 완료!");
+          document.querySelectorAll("input").forEach(el => el.value = "");
+        } else {
+          alert("등록 실패: " + result.error);
+        }
+      });
     }
   </script>
 </body>
