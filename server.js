@@ -1,4 +1,4 @@
-// index.js
+// server.js
 const express = require('express');
 const cors = require('cors');
 
@@ -19,6 +19,10 @@ app.post('/api/register', (req, res) => {
 
 app.get('/api/users', (req, res) => {
   res.json(users);
+});
+
+app.get("/", (req, res) => {
+  res.send("🎉 서버가 정상적으로 동작 중입니다!");
 });
 
 const PORT = process.env.PORT || 3000;
