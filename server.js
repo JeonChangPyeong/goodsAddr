@@ -8,6 +8,9 @@ app.use(express.json());
 
 const users = [];
 
+const ADMIN_PASSWORD = "qwer1234!"; // 비밀번호
+
+// 사용자 등록
 app.post('/api/register', (req, res) => {
   const { nickname, address, phone } = req.body;
   if (!nickname || !address || !phone) {
@@ -17,22 +20,7 @@ app.post('/api/register', (req, res) => {
   res.json({ success: true });
 });
 
-app.get('/api/users', (req, res) => {
-  res.json(users);
-});
-
-app.use(express.static(path.join(__dirname, 'public')));
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-app.use(express.static(path.join(__dirname, "."))); // 현재 디렉토리 정적 파일 제공
-app.get("/gamza", (req, res) => {
-  res.sendFile(path.join(__dirname, "gamza.html"));
-});
-
-const ADMIN_PASSWORD = "qwer1234!"; // ✏️ 원하는 비밀번호로 변경
-
+// 관리자 로그인
 app.post('/api/gamza/login', (req, res) => {
   const { password } = req.body;
   if (password === ADMIN_PASSWORD) {
@@ -42,6 +30,7 @@ app.post('/api/gamza/login', (req, res) => {
   }
 });
 
+// 관리자 사용자 조회
 app.get('/api/gamza/users', (req, res) => {
   const { key } = req.query;
   if (key !== ADMIN_PASSWORD) {
@@ -50,6 +39,18 @@ app.get('/api/gamza/users', (req, res) => {
   res.json(users);
 });
 
+// 정적 파일 제공
+app.use(express.static(path.join(__dirname, 'public')));
+
+// 관리자 페이지
+app.get('/gamza', (req, res) => {
+  res.sendFile(path.join(__dirname, 'gamza.html'));
+});
+
+// 모든 기타 요청은 index.html로 연결 (SPA 지원용)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`서버 실행 중: http://localhost:${PORT}`));
