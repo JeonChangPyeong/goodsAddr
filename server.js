@@ -40,7 +40,7 @@ app.post('/api/register', (req, res) => {
 });
 
 // 관리자 로그인
-const ADMIN_PASSWORD = "gamza"; // ✅ 변경 가능
+const ADMIN_PASSWORD = "qwer1234!"; // ✅ 변경 가능
 app.post('/api/gamza/login', (req, res) => {
   const { password } = req.body;
   if (password === ADMIN_PASSWORD) {
