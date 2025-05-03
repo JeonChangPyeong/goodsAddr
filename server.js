@@ -1,6 +1,6 @@
-// server.js
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 app.use(cors());
@@ -21,8 +21,9 @@ app.get('/api/users', (req, res) => {
   res.json(users);
 });
 
-app.get("/", (req, res) => {
-  res.send("🎉 서버가 정상적으로 동작 중입니다!");
+app.use(express.static(path.join(__dirname, 'public')));
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 const PORT = process.env.PORT || 3000;
